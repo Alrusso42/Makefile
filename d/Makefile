@@ -5,46 +5,46 @@
 #==--------------------------------------==#
 
 #### ===> Méthode 1 ####
-VERSION_FILE  := version.txt
-VERSION       := $(shell cat $(VERSION_FILE))
-VERSION_NEXT  := $(shell echo $$(($(VERSION)+1)))
-CURRENT_FOLDER = $(shell basename "$(shell pwd)")
-NAME           = $(CURRENT_FOLDER)
-DIR_NAME      := $(shell basename "$(CURDIR)")
-SRC_FILES      = Nom des fichiers sources sans les extensions (.cpp/ & .c/)
-SRC_DIR        = Nom choisi pour le dossier où les fichiers sources seront déplacés
-INC_FILES      = Nom des fichiers includes sans les extensions (.hpp/ & .h/)
-INC_DIR        = Nom choisi pour le dossier où les fichiers includes seront déplacés
-OBJ_DIR        = Nom choisi pour le dossier où les fichiers objets seront déplacés
-ARCHIVE_DIR   := Nom choisi pour le dossier où les fichiers .zip seront déplacés
-SRC_OUT        = $(foreach f, $(SRC_FILES), $(wildcard $(f)*.c*))
-SRC_IN         = $(foreach f, $(SRC_FILES), $(wildcard $(SRC_DIR)/$(f)*.c*))
-INC_OUT        = $(foreach f, $(INC_FILES), $(wildcard $(f)*.h*))
-INC_IN         = $(foreach f, $(INC_FILES), $(wildcard $(INC_DIR)/$(f)*.h*))
-LIBS           = Chemin pour accéder aux bibliothèques
-OBJ_OUT        = $(filter $(wildcard *.c*), $(SRC_OUT))
-OBJ_IN         = $(filter $(wildcard $(SRC_DIR)/*.c*), $(SRC_IN))
-OBJ            = $(patsubst %.cpp, %.o, \
-                 $(patsubst %.c, %.o, \
-                 $(OBJ_OUT) $(OBJ_IN)))
+#VERSION_FILE  := version.txt
+#VERSION       := $(shell cat $(VERSION_FILE))
+#VERSION_NEXT  := $(shell echo $$(($(VERSION)+1)))
+#CURRENT_FOLDER = $(shell basename "$(shell pwd)")
+#NAME           = $(CURRENT_FOLDER)
+#DIR_NAME      := $(shell basename "$(CURDIR)")
+#SRC_FILES      = Nom des fichiers sources sans les extensions (.cpp/ & .c/)
+#SRC_DIR        = Nom choisi pour le dossier où les fichiers sources seront déplacés
+#INC_FILES      = Nom des fichiers includes sans les extensions (.hpp/ & .h/)
+#INC_DIR        = Nom choisi pour le dossier où les fichiers includes seront déplacés
+#OBJ_DIR        = Nom choisi pour le dossier où les fichiers objets seront déplacés
+#ARCHIVE_DIR   := Nom choisi pour le dossier où les fichiers .zip seront déplacés
+#SRC_OUT        = $(foreach f, $(SRC_FILES), $(wildcard $(f)*.c*))
+#SRC_IN         = $(foreach f, $(SRC_FILES), $(wildcard $(SRC_DIR)/$(f)*.c*))
+#INC_OUT        = $(foreach f, $(INC_FILES), $(wildcard $(f)*.h*))
+#INC_IN         = $(foreach f, $(INC_FILES), $(wildcard $(INC_DIR)/$(f)*.h*))
+#LIBS           = Chemin pour accéder aux bibliothèques
+#OBJ_OUT        = $(filter $(wildcard *.c*), $(SRC_OUT))
+#OBJ_IN         = $(filter $(wildcard $(SRC_DIR)/*.c*), $(SRC_IN))
+#OBJ            = $(patsubst %.cpp, %.o, \
+#                 $(patsubst %.c, %.o, \
+#                 $(OBJ_OUT) $(OBJ_IN)))
 
 
 #### ===> Méthode 2 ####
-VERSION_FILE  := version.txt
-VERSION       := $(shell cat $(VERSION_FILE))
-VERSION_NEXT  := $(shell echo $$(($(VERSION)+1)))
+#VERSION_FILE  := version.txt
+#VERSION       := $(shell cat $(VERSION_FILE))
+#VERSION_NEXT  := $(shell echo $$(($(VERSION)+1)))
 CURRENT_FOLDER = $(shell basename "$(shell pwd)")
 NAME           = $(CURRENT_FOLDER)
 DIR_NAME      := $(shell basename "$(CURDIR)")
-SRC_DIR        = Nom choisi pour le dossier où les fichiers sources seront déplacés
-INC_DIR        = Nom choisi pour le dossier où les fichiers includes seront déplacés
-OBJ_DIR        = Nom choisi pour le dossier où les fichiers objets seront déplacés
-ARCHIVE_DIR   := Nom choisi pour le dossier où les fichiers .zip seront déplacés
+SRC_DIR        = src
+INC_DIR        = inc
+OBJ_DIR        = bin
+ARCHIVE_DIR   := archive
 SRC_IN         = $(wildcard $(SRC_DIR)/*.c*)
 SRC_OUT        = $(wildcard *.c*)
 INC_IN         = $(wildcard $(INC_DIR)/*.h*)
 INC_OUT        = $(wildcard *.h*)
-LIBS           = Chemin pour accéder aux bibliothèques
+#LIBS           = Chemin pour accéder aux bibliothèques
 OBJ_OUT        = $(filter $(wildcard *.c*), $(SRC_OUT))
 OBJ_IN         = $(filter $(wildcard $(SRC_DIR)/*.c*), $(SRC_IN))
 OBJ            = $(patsubst %.cpp, %.o, \
@@ -79,7 +79,8 @@ CONTINUE = $(SILENT) $(NOERR)
 # *                                      * #
 #==--------------------------------------==#
 
-all: $(NAME)
+all: check $(NAME)
+
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@c++ $(CPPFLAGS) -c $< -o $@
@@ -101,10 +102,11 @@ $(NAME): $(OBJ)
 	@$(CC) $(LIBS) $(DANGER) $(OBJ) -o $@
 	@$(MAKE) pack
 
-debug:
-	@echo $(OBJ_OUT)
-	@echo $(OBJ_IN)
-	@echo $(OBJ)
+check:
+	@if [ -d $(OBJ_DIR) ] && [ -d $(SRC_DIR) ] && [ -d $(INC_DIR) ]; then \
+		echo "Nothing to do"; \
+		exit 1 >/dev/null 2>&1; \
+	fi
 
 pack:
 	@mkdir -p $(SRC_DIR) $(INC_DIR) $(OBJ_DIR)
@@ -151,17 +153,55 @@ fclean: clean unpack
 re: fclean
 	@$(MAKE) all
 
-zip:
-	@mkdir -p $(ARCHIVE_DIR)
-	@zip -q $(ARCHIVE_DIR)/$(DIR_NAME)_archive_v$(VERSION_NEXT).zip * -x "$(ARCHIVE_DIR)/*"
-	@echo "$(VERSION_NEXT)" > $(VERSION_FILE)
-	@printf "$(CMP_WORK_ZP)"
-	@$(eval CMP_COUNT_ZP = $(shell expr $(CMP_COUNT_ZP) + 1))
-	@printf "$(ZIP_SUCCESS)";
+#version:
+#	@echo "$(VERSION)" > version.txt
+
+#zip: version
+#	@mkdir -p $(ARCHIVE_DIR)
+#	@zip -q $(ARCHIVE_DIR)/$(DIR_NAME)_archive_v$(VERSION).zip * -x "$(ARCHIVE_DIR)/*"
+#	@VERSION=$$(($(shell cat version.txt) + 1));
+#	@echo "$(VERSION)" > $(VERSION_FILE)
+#	@printf "$(CMP_WORK_ZP)"
+#	@$(eval CMP_COUNT_ZP = $(shell expr $(CMP_COUNT_ZP) + 1))
+#	@printf "$(ZIP_SUCCESS)";
+# Définition du nom de l'archive et de sa version
+# Récupération du numéro de version actuel depuis le fichier "version.txt"
+# Vérification si la cible "zip" est appelée
+# Vérification si la cible "zip" est appelée
+ifeq (zip,$(filter zip,$(MAKECMDGOALS)))
+	# Récupération du numéro de version actuel depuis le fichier "version.txt"
+VERSION := $(shell cat .version 2>/dev/null)
+
+	# Incrémentation du numéro de version et écriture dans le fichier ".version"
+NEW_VERSION := $(shell echo $$(($(VERSION) + 1)))
+$(shell echo $(NEW_VERSION) > .version)
+
+	# Définition du nom de l'archive avec le nouveau numéro de version
+ARCHIVE_NAME = $(notdir $(CURDIR))_archive_v$(NEW_VERSION).zip
+else
+	# Récupération du numéro de version actuel depuis le fichier ".version"
+VERSION := $(shell cat .version 2>/dev/null)
+
+	# Définition du nom de l'archive avec le numéro de version actuel
+ARCHIVE_NAME = $(notdir $(CURDIR))_archive_v$(VERSION).zip
+endif
+
+# Définition de la cible "zip"
+zip: | archive
+	@echo "Création de l'archive $(ARCHIVE_NAME)"
+	@zip -q -r archive/$(ARCHIVE_NAME) .
+
+# Création du dossier "archive" s'il n'existe pas déjà
+archive:
+	@mkdir -p archive
+
+.PHONY: zip archive
+
+
 
 czip:
 	@if [ -d "archive" ]; then rm -rf archive; fi
-	@rm -f version.txt
+	@rm -f .version
 	@printf "$(CLR_ZIP)";
 
 #==--------------------------------------==#
@@ -237,4 +277,4 @@ CMP_COUNT_ZP	= 0
 #==--------------------------------------==#
 
 .DEFAULT_GOAL = all
-.PHONY: all clean fclean pack unpack zip czip re
+.PHONY: all clean fclean pack unpack zip czip re archive
